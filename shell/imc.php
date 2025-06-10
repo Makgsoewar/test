@@ -1,6 +1,7 @@
 #!/usr/bin/php
-<?php 
-declare(ticks = 1); 
+<?php
+
+declare(ticks=1);
 if (!is_readable('app/Mage.php')) {
     echo "Could not find app/Mage.php\n";
     exit(1);
@@ -14,8 +15,8 @@ if (!Mage::isInstalled()) {
 
 $baseDir = getcwd();
 //not sure if this is necessary, ported over from cron.php script
-$_SERVER['SCRIPT_NAME'] = $baseDir.'/index.php';
-$_SERVER['SCRIPT_FILENAME'] = $baseDir.'/index.php';
+$_SERVER['SCRIPT_NAME'] = $baseDir . '/index.php';
+$_SERVER['SCRIPT_FILENAME'] = $baseDir . '/index.php';
 Mage::app()->setUseSessionInUrl(false);
 try {
     ini_set('display_errors', 1);
@@ -24,13 +25,14 @@ try {
         ini_set('error_log', $_SERVER['HOME'] . '/mdg_imc.log');
     }
     error_reporting(E_ALL);
-    Mage::app('','store');
+    Mage::app('', 'store');
     IMC::getInstance()->read();
 } catch (Exception $e) {
     Mage::printException($e);
 }
 
-class IMC {
+class IMC
+{
     protected static $instance = null;
     protected $historyFile = null;
     protected $histSize    = 20;
@@ -40,7 +42,7 @@ class IMC {
     {
 
         if (!empty($_SERVER['HOME'])) {
-            $this->historyFile = $_SERVER['HOME'].'/.imc_history';
+            $this->historyFile = $_SERVER['HOME'] . '/.imc_history';
             if (!file_exists($this->historyFile)) {
                 file_put_contents($this->historyFile, '');
             }
@@ -50,12 +52,12 @@ class IMC {
                 $this->histSize = $_ENV['HISTSIZE'];
             }
         }
-        
+
         readline_completion_function(array($this, 'completeCallback'));
-        register_shutdown_function(array($this, 'fatalErrorShutdown'));  
+        register_shutdown_function(array($this, 'fatalErrorShutdown'));
         # // Catch Ctrl+C, kill and SIGTERM
-        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));  
-        pcntl_signal(SIGINT, array($this, 'sigintShutdown')); 
+        pcntl_signal(SIGTERM, array($this, 'sigintShutdown'));
+        pcntl_signal(SIGINT, array($this, 'sigintShutdown'));
     }
 
     public function fatalErrorShutdown()
@@ -108,20 +110,19 @@ class IMC {
         readline_add_history($line);
     }
 
-    public function quit($code=0)
+    public function quit($code = 0)
     {
-        $this->__destruct();//just to be safe, if eval causes fatal error we have to call explicitly
+        $this->__destruct(); //just to be safe, if eval causes fatal error we have to call explicitly
         exit($code);
     }
-
     protected function completeCallback($line)
     {
         if (!empty($line)) {
             $line = preg_quote($line);
             $funcs = get_defined_functions();
-            $constants = get_defined_constants();//use these?
-            $avail = array_merge(get_declared_classes(),$funcs['user'], $funcs['internal'], array());
-	    /*$classNameRegex = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
+            $constants = get_defined_constants(); //use these?
+            $avail = array_merge(get_declared_classes(), $funcs['user'], $funcs['internal'], array());
+            /*$classNameRegex = '[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*';
             if (substr($line, -4) == '\:\:') {
 		$class = substr($line,0, -4);
 		if (in_array($class, $avail)) {
@@ -133,7 +134,7 @@ class IMC {
 		}
 	    }*/
             $matches =  preg_grep("/^$line/", $avail);
-            if (!empty($matches)) {//will segfault if we return empty array after 3 times...
+            if (!empty($matches)) { //will segfault if we return empty array after 3 times...
                 return $matches;
             }
         }
